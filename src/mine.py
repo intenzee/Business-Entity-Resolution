@@ -14,8 +14,9 @@ import sys
 
 import polars as pl
 
-WORK = os.environ.get("BER_WORK", "/Users/tanmayroy/Downloads/ber/work")
-GT = os.environ.get("BER_GT", "/Users/tanmayroy/Downloads/student_resource/dataset/train/train_ground_truth.tsv")
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # code/business_entity_resolution
+WORK = os.environ.get("BER_WORK", os.path.join(_ROOT, "work"))
+GT = os.environ.get("BER_GT", os.path.join(os.environ.get("BER_DATA", os.path.join(_ROOT, "..", "..", "dataset")), "train", "train_ground_truth.tsv"))
 
 
 def load_gt_pairs():

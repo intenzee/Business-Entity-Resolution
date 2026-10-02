@@ -19,8 +19,9 @@ import polars as pl
 sys.path.insert(0, os.path.dirname(__file__))
 from norm import name_tokens, addr_tokens  # noqa: E402
 
-DATA = os.environ.get("BER_DATA", "/Users/tanmayroy/Downloads/student_resource/dataset")
-WORK = os.environ.get("BER_WORK", "/Users/tanmayroy/Downloads/ber/work")
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # code/business_entity_resolution
+DATA = os.environ.get("BER_DATA", os.path.join(_ROOT, "..", "..", "dataset"))
+WORK = os.environ.get("BER_WORK", os.path.join(_ROOT, "work"))
 
 
 def read_tsv(path):

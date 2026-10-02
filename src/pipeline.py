@@ -21,8 +21,9 @@ sys.path.insert(0, os.path.dirname(__file__))
 from block import block  # noqa: E402
 from features import pair_features, context_features  # noqa: E402
 
-WORK = os.environ.get("BER_WORK", "/Users/tanmayroy/Downloads/ber/work")
-OUT = os.environ.get("BER_OUT", "/Users/tanmayroy/Downloads/ber/output")
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # code/business_entity_resolution
+WORK = os.environ.get("BER_WORK", os.path.join(_ROOT, "work"))
+OUT = os.environ.get("BER_OUT", os.path.join(_ROOT, "..", "..", "output"))
 K_WORD, K_CHAR = int(os.environ.get("BER_KW", 10)), int(os.environ.get("BER_KC", 6))
 TR_PCT = int(os.environ.get("BER_TRPCT", 12))  # stage-1 fold width (% of S1 hash space)
 VPCT = int(os.environ.get("BER_VPCT", 6))       # validation = hash folds [50-VPCT, 50)
@@ -221,7 +222,8 @@ def train(train_pct=12, valid_pct=6):
         del f
     tr = pl.concat(tr).join(gt, on=["q", "t"], how="left").with_columns(pl.col("y").fill_null(0))
     va = pl.concat(va).join(gt, on=["q", "t"], how="left").with_columns(pl.col("y").fill_null(0))
-    feats = [c for c in tr.columns if c not in DROP | {"fold", "country"}]
+    # name-frequency columns from enrich() are appended separately in train2 (feats1)
+    feats = [c for c in tr.columns if c not in DROP | {"fold", "country", "same_ak"} | set(NF_Q + NF_T)]
     print("train rows", tr.height, "pos", tr["y"].mean(), "valid rows", va.height, "feats", len(feats), flush=True)
     params = dict(objective="binary", learning_rate=0.08, num_leaves=127, min_data_in_leaf=200,
                   feature_fraction=0.8, bagging_fraction=0.8, bagging_freq=1, lambda_l2=1.0,

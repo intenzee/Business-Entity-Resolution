@@ -15,10 +15,15 @@ Point `BER_DATA` at the folder containing `train/` and `test/` from the challeng
 
 ## Run end-to-end
 ```bash
-export BER_DATA=/path/to/student_resource/dataset
-export BER_OUT=/path/to/output          # where the two TSVs are written
+python3.12 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+export BER_DATA=/path/to/student_resource/dataset   # default: ./dataset
+export BER_OUT=/path/to/output                      # default: ./output
 ./run_all.sh
 ```
+Intermediate files go to `work/` inside this folder (override with `BER_WORK`); allow about 30 GB of disk.
+All settings used for the submitted run (blocking budget 24 word + 12 char, row budgets,
+100 % decoys kept) are fixed inside `run_all.sh`.
 
 `run_all.sh` runs these steps in order:
 
@@ -31,6 +36,14 @@ export BER_OUT=/path/to/output          # where the two TSVs are written
 7. `shift.py`: label-shift correction for nearby-house-number decoys (per-bucket rescale of p using validation vs test predicted-pair rates, no test labels), then the final decode.
 
 Total time is about 4 hours on an 8-core / 8 GB laptop.
+
+**Reproducibility.** Every split and sample is a deterministic hash of the record ID, and the
+feature lists are derived from the data, so a fresh run rebuilds the same pipeline. Two sources of
+small run-to-run variation remain: LightGBM multithreaded training is not bit-exact, and the
+France self-training rules (step 5) are mined from the run's own stage-2 predictions. Expect the
+regenerated `matching_results.tsv` to differ from the submitted file on a small fraction of rows,
+with the same score to about ±0.001. `candidate_pairs.tsv` depends only on blocking and reproduces
+exactly given the same rules.
 
 Outputs:
 - `$BER_OUT/matching_results.tsv`: the final matches.
